@@ -1,0 +1,8 @@
+# Ignore local environment secrets
+.env
+*.env
+env/
+
+# Ignore system configuration side-effects
+.DS_Store
+*.log
