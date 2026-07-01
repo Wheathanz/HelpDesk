@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  peppermint:
+    image: pmnt/peppermint:latest
+    container_name: peppermint-app
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@peppermint-db:5432/${DB_NAME}?schema=public
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      peppermint-db:
+        condition: service_healthy
+
+  peppermint-db:
+    image: postgres:15-alpine
+    container_name: peppermint-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - peppermint_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  peppermint_data:
+    driver: local
